@@ -48,6 +48,7 @@ Operás y mantenés una Base de Conocimiento (KB) versionada en Git.
 kb/
 ├── incidencias/<servicio>/          # Registros de incidencias
 ├── soluciones/<servicio>/           # Registros de soluciones
+├── documentos/<servicio>/           # Documentos combinados (incidencia + solución)
 ├── scripts/<servicio>/
 │   ├── bash/
 │   ├── powershell/
@@ -61,12 +62,13 @@ kb/
 
 ## Convención de nombres
 
-| Tipo       | Patrón                                                        | Ejemplo                                              |
-|------------|---------------------------------------------------------------|------------------------------------------------------|
-| Incidencia | `kb/incidencias/<servicio>/INC-YYYY-####-<slug>.md`           | `kb/incidencias/dns/INC-2026-0001-fallo-resolucion.md` |
-| Solución   | `kb/soluciones/<servicio>/SOL-YYYY-####-<slug>.md`            | `kb/soluciones/dns/SOL-2026-0001-flush-cache-dns.md`   |
-| Script     | `kb/scripts/<servicio>/<lenguaje>/SCR-YYYY-####-<slug>.<ext>` | `kb/scripts/dns/bash/SCR-2026-0001-flush-dns.sh`       |
-| Adjunto    | `kb/attachments/<servicio>/<ID>/*`                            | `kb/attachments/dns/INC-2026-0001/captura.png`         |
+| Tipo       | Patrón                                                        | Ejemplo                                                  |
+|------------|---------------------------------------------------------------|----------------------------------------------------------|
+| Incidencia | `kb/incidencias/<servicio>/INC-YYYY-####-<slug>.md`           | `kb/incidencias/dns/INC-2026-0001-fallo-resolucion.md`   |
+| Solución   | `kb/soluciones/<servicio>/SOL-YYYY-####-<slug>.md`            | `kb/soluciones/dns/SOL-2026-0001-flush-cache-dns.md`     |
+| Documento  | `kb/documentos/<servicio>/DOC-YYYY-####-<slug>.md`            | `kb/documentos/dns/DOC-2026-0001-fallo-dns-flush-cache.md` |
+| Script     | `kb/scripts/<servicio>/<lenguaje>/SCR-YYYY-####-<slug>.<ext>` | `kb/scripts/dns/bash/SCR-2026-0001-flush-dns.sh`         |
+| Adjunto    | `kb/attachments/<servicio>/<ID>/*`                            | `kb/attachments/dns/INC-2026-0001/captura.png`           |
 
 ## Generación de IDs
 
@@ -81,9 +83,9 @@ Para generar el próximo ID secuencial:
 
 # METADATA MÍNIMA OBLIGATORIA
 
-## Para Incidencias (INC) y Soluciones (SOL)
+## Para Incidencias (INC), Soluciones (SOL) y Documentos (DOC)
 
-Cada archivo INC/SOL **DEBE** incluir un bloque YAML frontmatter con estos campos:
+Cada archivo INC/SOL/DOC **DEBE** incluir un bloque YAML frontmatter con estos campos:
 
 ```yaml
 ---
@@ -133,11 +135,28 @@ Además de los campos base, los scripts **DEBEN** incluir un header de comentari
 
 ---
 
+# DOCUMENTOS COMBINADOS (DOC) — INCIDENCIA + SOLUCIÓN
+
+Los documentos (`kb/documentos/`) son registros que combinan la incidencia y su solución en un único archivo.
+
+## Cuándo crear un DOC
+- Cuando el usuario reporta una incidencia Y aporta la solución en la misma interacción.
+- Cuando se quiere tener un documento unificado de referencia rápida.
+- Un DOC puede coexistir con INC/SOL separados si ya existían previamente.
+
+## Reglas
+- Usan el mismo frontmatter YAML que INC/SOL (con prefijo `DOC-`).
+- Deben incluir ambas secciones: **Incidencia** y **Solución** (ver template `kb/templates/DOC-template.md`).
+- La deduplicación aplica igual: buscar en `kb/documentos/`, `kb/incidencias/` y `kb/soluciones/` antes de crear.
+- Actualizar el índice `kb/index/documentos.md` al crear o modificar.
+
+---
+
 # REGLAS DE DEDUPLICACIÓN — INCIDENCIAS
 
-**Antes de crear una INC nueva, SIEMPRE ejecutá estos pasos:**
+**Antes de crear una INC o DOC nueva, SIEMPRE ejecutá estos pasos:**
 
-1. **Buscar coincidencias** en `kb/incidencias/` por:
+1. **Buscar coincidencias** en `kb/incidencias/` y `kb/documentos/` por:
    - Error codes / strings exactos (grep/search)
    - Servicio + síntoma principal
    - Términos clave normalizados (sinónimos, variantes)
@@ -232,6 +251,7 @@ Cuando el usuario confirme guardar cambios:
 3. Convención de commits:
    - `feat: add INC-2026-XXXX <titulo>` — nueva incidencia
    - `feat: add SOL-2026-XXXX <titulo>` — nueva solución
+   - `feat: add DOC-2026-XXXX <titulo>` — nuevo documento (incidencia + solución)
    - `feat: add SCR-2026-XXXX <titulo>` — nuevo script
    - `fix: update INC-2026-XXXX <descripción>` — actualización
    - `docs: update index` — actualización de índices
@@ -242,7 +262,7 @@ Cuando el usuario confirme guardar cambios:
 # ACTUALIZACIÓN DE ÍNDICES
 
 Cada vez que se cree o modifique un registro, actualizar los índices en `kb/index/`:
-- Mantener un archivo de índice por tipo (`incidencias.md`, `soluciones.md`, `scripts.md`).
+- Mantener un archivo de índice por tipo (`incidencias.md`, `soluciones.md`, `scripts.md`, `documentos.md`).
 - Formato de entrada en el índice: `| ID | Título | Servicio | Estado | Fecha |`
 - Actualizar enlaces cruzados entre INC ↔ SOL ↔ SCR.
 
